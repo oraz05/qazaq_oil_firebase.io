@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qazaq Oil — Қарыз жүйесі</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;--bg4:#243048;
+    --gold:#e8a020;--gold2:#f5b840;
+    --text:#f0f4ff;--text2:#9aabc2;--text3:#5a7090;
+    --red:#e05555;--green:#3db87a;--border:#2a3a55;
+    --r:10px;
+  }
+  body{font-family:'Golos Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .screen{display:none;min-height:100vh}
+  .screen.active{display:flex;flex-direction:column}
+  #db-loading{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;color:var(--text2);z-index:999;display:flex;align-items:center;gap:8px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #login-screen{align-items:center;justify-content:center}
+  .login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:340px;max-width:95vw}
+  .logo-badge{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:1.5rem}
+  .logo-icon{width:48px;height:48px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#000}
+  .logo-text{font-size:20px;font-weight:700}
+  .logo-sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:2rem}
+  .field{margin-bottom:1rem}
+  .field label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500}
+  .field select,.field input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-size:14px;font-family:inherit;outline:none}
+  .field select:focus,.field input:focus{border-color:var(--gold)}
+  .btn-login{width:100%;background:var(--gold);color:#000;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:0.5rem}
+  .login-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none}
+  .header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.25rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .header-left{display:flex;align-items:center;gap:10px}
+  .h-logo{background:var(--gold);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;color:#000}
+  .h-title{font-size:15px;font-weight:600}
+  .h-sub{font-size:12px;color:var(--text2)}
+  .btn-logout{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+  #cashier-screen .content{flex:1;padding:1.25rem;max-width:700px;margin:0 auto;width:100%}
+  .welcome-banner{background:linear-gradient(135deg,#1a2a4a,#1a3020);border:1px solid var(--gold);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px}
+  .wb-icon{font-size:24px}
+  .wb-title{font-size:15px;font-weight:600;color:var(--gold2)}
+  .wb-sub{font-size:13px;color:var(--text2)}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem}
+  .card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .card-title{font-size:14px;font-weight:600}
+  .card-body{padding:16px}
+  .add-form{display:flex;gap:8px;flex-wrap:wrap}
+  .add-form input{flex:1;min-width:140px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none}
+  .add-form input:focus{border-color:var(--gold)}
+  .btn-add{background:var(--gold);color:#000;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .debt-list{display:flex;flex-direction:column;gap:8px}
+  .debt-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .debt-name{font-size:14px;font-weight:500;flex:1}
+  .debt-qty{background:var(--gold);color:#000;border-radius:6px;padding:3px 10px;font-size:14px;font-weight:700;min-width:36px;text-align:center}
+  .debt-date{font-size:11px;color:var(--text3)}
+  .btn-del{background:transparent;border:1px solid #3a2a2a;color:var(--red);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+  .empty-state{text-align:center;padding:2rem;color:var(--text3);font-size:14px}
+  .hist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .hist-item:last-child{border-bottom:none}
+  .hist-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0}
+  .hist-info{flex:1;font-size:13px}
+  .hist-date{font-size:11px;color:var(--text3)}
+  .hist-action{font-size:11px;padding:2px 7px;border-radius:4px}
+  .hist-action.add{background:#1a3020;color:var(--green)}
+  .hist-action.remove{background:#3a1a1a;color:var(--red)}
+  .hist-action.clear{background:#2a2a1a;color:var(--gold)}
+  #manager-screen .content{flex:1;padding:1.25rem;max-width:900px;margin:0 auto;width:100%}
+  .mgr-tabs{display:flex;gap:6px;margin-bottom:1.25rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:5px}
+  .tab-btn{flex:1;background:transparent;border:none;color:var(--text2);border-radius:7px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center}
+  .tab-btn.active{background:var(--gold);color:#000;font-weight:700}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  .cashier-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem}
+  .cc-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .cc-name{display:flex;align-items:center;gap:10px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+  .cc-count{font-size:12px;color:var(--text2)}
+  .btn-clear{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+  .cc-body{padding:12px 16px}
+  .mgr-debt-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:7px;margin-bottom:6px}
+  .mgr-debt-name{flex:1;font-size:13px}
+  .qty-ctrl{display:flex;align-items:center;gap:6px}
+  .qty-btn{width:24px;height:24px;border-radius:5px;background:var(--bg4);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .qty-val{background:var(--gold);color:#000;border-radius:5px;padding:2px 8px;font-size:13px;font-weight:700;min-width:28px;text-align:center}
+  .btn-item-del{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 6px}
+  .hist-scroll{max-height:350px;overflow-y:auto}
+  .badge-count{background:var(--gold);color:#000;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
+  .loading-txt{text-align:center;color:var(--text3);padding:2rem;font-size:14px}
+  .btn-add-item{background:transparent;border:1px dashed var(--border);color:var(--text2);border-radius:7px;padding:8px;font-size:12px;width:100%;cursor:pointer;font-family:inherit;margin-top:4px}
+  .mgr-add-row{display:flex;gap:6px;margin-top:8px}
+  .mgr-add-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+  .btn-save-item{background:var(--gold);color:#000;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<div id="db-loading"><span class="spin"></span> Firebase жүктелуде...</div>
+
+<div id="login-screen" class="screen active">
+  <div class="login-box">
+    <div class="logo-badge">
+      <div class="logo-icon">QO</div>
+      <div class="logo-text">Qazaq Oil</div>
+    </div>
+    <div class="logo-sub">АЗС Қарыз Жүйесі</div>
+    <div class="field">
+      <label>Қызметкер</label>
+      <select id="user-select">
+        <option value="">— таңдаңыз —</option>
+        <option value="Оразби|000|cashier">Оразби (Кассир)</option>
+        <option value="Аида|111|cashier">Аида (Кассир)</option>
+        <option value="Арман|222|cashier">Арман (Кассир)</option>
+        <option value="Ақниет|333|cashier">Ақниет (Кассир)</option>
+        <option value="Ақниет Қ|444|cashier">Ақниет Қ (Кассир)</option>
+        <option value="Жанболат|1010|manager">Жанболат (Менеджер)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Құпия сөз</label>
+      <input type="password" id="pass-input" placeholder="••••" />
+    </div>
+    <button class="btn-login" id="login-btn">Кіру</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div id="cashier-screen" class="screen">
+  <div class="header">
+    <div class="header-left">
+      <div class="h-logo">QO</div>
+      <div>
+        <div class="h-title" id="c-username"></div>
+        <div class="h-sub">Кассир</div>
+      </div>
+    </div>
+    <button class="btn-logout" id="logout-btn-c">Шығу</button>
+  </div>
+  <div class="content">
+    <div class="welcome-banner">
+      <div class="wb-icon">👋</div>
+      <div>
+        <div class="wb-title" id="c-welcome"></div>
+        <div class="wb-sub">Qazaq Oil АЗС — Қарыз есебі жүйесі</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Тауар қосу</div></div>
+      <div class="card-body">
+        <div class="add-form">
+          <input id="item-name" placeholder="Тауар атауы (мыс: Кола 1л)" />
+          <button class="btn-add" id="add-btn">+ Қосу</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Менің қарыздарым</div>
+        <span class="badge-count" id="c-debt-count">0</span>
+      </div>
+      <div class="card-body">
+        <div class="debt-list" id="c-debt-list"><div class="loading-txt">Жүктелуде...</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Тарих</div></div>
+      <div class="card-body hist-scroll" id="c-history"><div class="loading-txt">Жүктелуде...</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="manager-screen" class="screen">
+  <div class="header">
+    <div class="header-left">
+      <div class="h-logo" style="background:#8040c0;color:#fff">MGR</div>
+      <div>
+        <div class="h-title">Жанболат</div>
+        <div class="h-sub">Менеджер</div>
+      </div>
+    </div>
+    <button class="btn-logout" id="logout-btn-m">Шығу</button>
+  </div>
+  <div class="content">
+    <div class="welcome-banner" style="border-color:#8040c0">
+      <div class="wb-icon">🛡️</div>
+      <div>
+        <div class="wb-title" style="color:#c080ff">Менеджер панелі</div>
+        <div class="wb-sub">Барлық кассирлердің қарыздарын басқарыңыз</div>
+      </div>
+    </div>
+    <div class="mgr-tabs">
+      <button class="tab-btn active" id="tab-btn-debts">Қарыздар</button>
+      <button class="tab-btn" id="tab-btn-history">Тарих</button>
+      <button class="tab-btn" id="tab-btn-stats">Статистика</button>
+    </div>
+    <div id="tab-debts" class="tab-content active">
+      <div id="mgr-cashiers"><div class="loading-txt">Жүктелуде...</div></div>
+    </div>
+    <div id="tab-history" class="tab-content">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Барлық тарих</div>
+          <select id="hist-filter" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit">
+            <option value="">Барлығы</option>
+            <option value="Оразби">Оразби</option>
+            <option value="Аида">Аида</option>
+            <option value="Арман">Арман</option>
+            <option value="Ақниет">Ақниет</option>
+            <option value="Ақниет Қ">Ақниет Қ</option>
+          </select>
+        </div>
+        <div class="card-body hist-scroll" id="mgr-hist-list"></div>
+      </div>
+    </div>
+    <div id="tab-stats" class="tab-content">
+      <div id="mgr-stats"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBgAu1M-g6qMi8qRuDbDEiv7Es2t5L7awc",
+  authDomain: "qazaqoil.firebaseapp.com",
+  projectId: "qazaqoil",
+  storageBucket: "qazaqoil.firebasestorage.app",
+  messagingSenderId: "805766197173",
+  appId: "1:805766197173:web:2219729a0e67f2309233fc"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const CASHIERS = ['Оразби','Аида','Арман','Ақниет','Ақниет Қ'];
+let appData = {debts:{},history:[]};
+let currentUser = null;
+let dbReady = false;
+
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const fmt = iso => { const d=new Date(iso); return d.toLocaleDateString('kk-KZ',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('kk-KZ',{hour:'2-digit',minute:'2-digit'}); };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const addHist = (cashier,item,qty,action) => { appData.history.push({id:uid(),cashier,item,qty,date:new Date().toISOString(),action}); if(appData.history.length>500) appData.history=appData.history.slice(-500); };
+const saveData = () => setDoc(doc(db,'system','main'), appData);
+
+// Realtime
+onSnapshot(doc(db,'system','main'), snap => {
+  appData = snap.exists() ? snap.data() : {debts:{},history:[]};
+  CASHIERS.forEach(c=>{ if(!appData.debts[c]) appData.debts[c]=[]; });
+  if(!appData.history) appData.history=[];
+  dbReady = true;
+  document.getElementById('db-loading').style.display='none';
+  if(currentUser) currentUser.role==='cashier' ? renderCashier() : renderManagerAll();
+}, () => { document.getElementById('db-loading').textContent='⚠️ Интернет жоқ!'; });
+
+// Login
+document.getElementById('login-btn').addEventListener('click', login);
+document.getElementById('pass-input').addEventListener('keydown', e => e.key==='Enter' && login());
+
+function login(){
+  const sel=document.getElementById('user-select').value;
+  const pass=document.getElementById('pass-input').value;
+  const err=document.getElementById('login-err');
+  if(!sel){ err.style.display='block'; err.textContent='Қызметкер таңдаңыз!'; return; }
+  const [name,correctPass,role]=sel.split('|');
+  if(pass!==correctPass){ err.style.display='block'; err.textContent='Құпия сөз қате!'; return; }
+  if(!dbReady){ err.style.display='block'; err.textContent='Firebase жүктелуде...'; return; }
+  err.style.display='none';
+  currentUser={name,role};
+  document.getElementById('login-screen').classList.remove('active');
+  if(role==='manager'){
+    document.getElementById('manager-screen').classList.add('active');
+    renderManagerAll();
+  } else {
+    document.getElementById('c-username').textContent=name;
+    document.getElementById('c-welcome').textContent='Сәлем, '+name+'!';
+    document.getElementById('cashier-screen').classList.add('active');
+    renderCashier();
+  }
+}
+
+function logout(){
+  currentUser=null;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('pass-input').value='';
+  document.getElementById('user-select').value='';
+}
+document.getElementById('logout-btn-c').addEventListener('click', logout);
+document.getElementById('logout-btn-m').addEventListener('click', logout);
+
+// Cashier
+function renderCashier(){
+  if(!currentUser||currentUser.role!=='cashier') return;
+  const name=currentUser.name;
+  const items=appData.debts[name]||[];
+  const list=document.getElementById('c-debt-list');
+  document.getElementById('c-debt-count').textContent=items.length;
+  if(!items.length){ list.innerHTML='<div class="empty-state">Қарыз жоқ 🎉</div>'; }
+  else {
+    list.innerHTML=items.map(it=>`<div class="debt-item"><div><div class="debt-name">${esc(it.name)}</div><div class="debt-date">${fmt(it.firstDate)}</div></div><div style="display:flex;align-items:center;gap:8px"><div class="debt-qty">${it.qty}×</div><button class="btn-del" data-id="${it.id}">Жою</button></div></div>`).join('');
+    list.querySelectorAll('.btn-del').forEach(b=>b.addEventListener('click',()=>removeItem(b.dataset.id)));
+  }
+  const myHist=(appData.history||[]).filter(h=>h.cashier===name).slice().reverse().slice(0,50);
+  const hist=document.getElementById('c-history');
+  hist.innerHTML=!myHist.length?'<div class="empty-state">Тарих жоқ</div>':myHist.map(h=>`<div class="hist-item"><div class="hist-dot"></div><div class="hist-info"><b>${esc(h.item)}</b> — ${h.qty}×</div><div style="display:flex;align-items:center;gap:6px"><div class="hist-date">${fmt(h.date)}</div><span class="hist-action ${h.action}">${h.action==='add'?'қосылды':h.action==='remove'?'жойылды':'тазаланды'}</span></div></div>`).join('');
+}
+
+document.getElementById('add-btn').addEventListener('click', addItem);
+document.getElementById('item-name').addEventListener('keydown', e=>e.key==='Enter'&&addItem());
+
+async function addItem(){
+  const inp=document.getElementById('item-name');
+  const name=inp.value.trim(); if(!name) return;
+  const user=currentUser.name;
+  const items=appData.debts[user];
+  const ex=items.find(i=>i.name.toLowerCase()===name.toLowerCase());
+  if(ex){ex.qty++;ex.lastDate=new Date().toISOString();addHist(user,name,ex.qty,'add');}
+  else{const now=new Date().toISOString();items.push({id:uid(),name,qty:1,firstDate:now,lastDate:now});addHist(user,name,1,'add');}
+  await saveData(); inp.value=''; renderCashier();
+}
+
+async function removeItem(id){
+  const user=currentUser.name; const items=appData.debts[user];
+  const idx=items.findIndex(i=>i.id===id); if(idx===-1) return;
+  addHist(user,items[idx].name,items[idx].qty,'remove');
+  items.splice(idx,1); await saveData(); renderCashier();
+}
+
+// Manager
+function renderManagerAll(){
+  if(!currentUser||currentUser.role!=='manager') return;
+  const cont=document.getElementById('mgr-cashiers');
+  const colors=['#e8a020','#3db87a','#5090e0','#e05090','#a050d0'];
+  cont.innerHTML=CASHIERS.map((name,ci)=>{
+    const items=appData.debts[name]||[];
+    const total=items.reduce((s,i)=>s+i.qty,0);
+    const k=name.replace(/\s/g,'_');
+    const itemsHtml=!items.length?'<div class="empty-state" style="padding:1rem 0">Қарыз жоқ</div>':items.map(it=>`<div class="mgr-debt-item"><div class="mgr-debt-name">${esc(it.name)}<br><span style="font-size:11px;color:var(--text3)">${fmt(it.firstDate)}</span></div><div class="qty-ctrl"><button class="qty-btn" data-c="${name}" data-id="${it.id}" data-d="-1">−</button><span class="qty-val">${it.qty}</span><button class="qty-btn" data-c="${name}" data-id="${it.id}" data-d="1">+</button><button class="btn-item-del" data-c="${name}" data-id="${it.id}">✕</button></div></div>`).join('');
+    return `<div class="cashier-card"><div class="cc-head"><div class="cc-name"><div class="avatar" style="background:${colors[ci%5]}20;color:${colors[ci%5]}">${name.substring(0,2).toUpperCase()}</div><div><div style="font-weight:600;font-size:14px">${esc(name)}</div><div class="cc-count">${items.length} тауар, ${total} дана</div></div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-add-item" style="width:auto;padding:5px 12px;border-style:solid;margin:0" data-open="${name}">+ Қосу</button>${items.length?`<button class="btn-clear" data-clear="${name}">Тазалау</button>`:''}</div></div><div class="cc-body">${itemsHtml}<div id="mgr-add-${k}" style="display:none"><div class="mgr-add-row"><input id="mgr-inp-${k}" placeholder="Тауар атауы..."/><button class="btn-save-item" data-save="${name}">Қосу</button></div></div></div></div>`;
+  }).join('');
+  cont.querySelectorAll('.qty-btn').forEach(b=>b.addEventListener('click',()=>mgrQty(b.dataset.c,b.dataset.id,parseInt(b.dataset.d))));
+  cont.querySelectorAll('.btn-item-del').forEach(b=>b.addEventListener('click',()=>mgrDel(b.dataset.c,b.dataset.id)));
+  cont.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{ const el=document.getElementById('mgr-add-'+b.dataset.open.replace(/\s/g,'_')); el.style.display=el.style.display==='none'?'block':'none'; }));
+  cont.querySelectorAll('[data-clear]').forEach(b=>b.addEventListener('click',()=>mgrClear(b.dataset.clear)));
+  cont.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>mgrSave(b.dataset.save)));
+}
+
+async function mgrSave(name){
+  const k=name.replace(/\s/g,'_'); const inp=document.getElementById('mgr-inp-'+k);
+  const val=inp.value.trim(); if(!val) return;
+  const items=appData.debts[name]; const ex=items.find(i=>i.name.toLowerCase()===val.toLowerCase());
+  if(ex){ex.qty++;ex.lastDate=new Date().toISOString();addHist(name,val,ex.qty,'add');}
+  else{const now=new Date().toISOString();items.push({id:uid(),name:val,qty:1,firstDate:now,lastDate:now});addHist(name,val,1,'add');}
+  await saveData(); inp.value=''; renderManagerAll();
+}
+
+async function mgrQty(cashier,id,delta){
+  const items=appData.debts[cashier]; const it=items.find(i=>i.id===id); if(!it) return;
+  it.qty+=delta;
+  if(it.qty<=0){addHist(cashier,it.name,0,'remove');items.splice(items.indexOf(it),1);}
+  else{addHist(cashier,it.name,it.qty,delta>0?'add':'remove');}
+  await saveData(); renderManagerAll();
+}
+
+async function mgrDel(cashier,id){
+  const items=appData.debts[cashier]; const it=items.find(i=>i.id===id); if(!it) return;
+  addHist(cashier,it.name,it.qty,'remove'); items.splice(items.indexOf(it),1); await saveData(); renderManagerAll();
+}
+
+async function mgrClear(cashier){
+  (appData.debts[cashier]||[]).forEach(it=>addHist(cashier,it.name,it.qty,'clear'));
+  appData.debts[cashier]=[]; await saveData(); renderManagerAll();
+}
+
+// Tabs
+document.getElementById('tab-btn-debts').addEventListener('click',()=>switchTab('debts'));
+document.getElementById('tab-btn-history').addEventListener('click',()=>switchTab('history'));
+document.getElementById('tab-btn-stats').addEventListener('click',()=>switchTab('stats'));
+document.getElementById('hist-filter').addEventListener('change', renderMgrHistory);
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-btn-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='history') renderMgrHistory();
+  if(tab==='stats') renderStats();
+}
+
+function renderMgrHistory(){
+  const filter=document.getElementById('hist-filter').value;
+  const list=document.getElementById('mgr-hist-list');
+  let hist=(appData.history||[]).slice().reverse();
+  if(filter) hist=hist.filter(h=>h.cashier===filter);
+  list.innerHTML=!hist.length?'<div class="empty-state">Тарих жоқ</div>':hist.slice(0,100).map(h=>`<div class="hist-item"><div class="hist-dot"></div><div class="hist-info"><b>${esc(h.cashier)}</b> — ${esc(h.item)}, ${h.qty}×</div><div style="display:flex;align-items:center;gap:6px"><div class="hist-date">${fmt(h.date)}</div><span class="hist-action ${h.action}">${h.action==='add'?'қосылды':h.action==='remove'?'жойылды':'тазаланды'}</span></div></div>`).join('');
+}
+
+function renderStats(){
+  const el=document.getElementById('mgr-stats');
+  const totalAll=CASHIERS.reduce((s,c)=>s+(appData.debts[c]||[]).reduce((a,i)=>a+i.qty,0),0);
+  const totalItems=CASHIERS.reduce((s,c)=>s+(appData.debts[c]||[]).length,0);
+  const allItems={};
+  CASHIERS.forEach(c=>(appData.debts[c]||[]).forEach(i=>{allItems[i.name]=(allItems[i.name]||0)+i.qty;}));
+  const sorted=Object.entries(allItems).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem"><div class="card" style="text-align:center;padding:1.25rem"><div style="font-size:28px;font-weight:700;color:var(--gold)">${totalItems}</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Жалпы тауар түрі</div></div><div class="card" style="text-align:center;padding:1.25rem"><div style="font-size:28px;font-weight:700;color:var(--gold)">${totalAll}</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Жалпы дана</div></div></div><div class="card"><div class="card-head"><div class="card-title">Кассирлер бойынша</div></div><div class="card-body">${CASHIERS.map(c=>{const items=appData.debts[c]||[];const qty=items.reduce((s,i)=>s+i.qty,0);const pct=totalAll?Math.round(qty/totalAll*100):0;return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${esc(c)}</span><span style="color:var(--text2)">${qty} дана</span></div><div style="height:6px;background:var(--bg4);border-radius:3px"><div style="height:6px;background:var(--gold);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}</div></div>${sorted.length?`<div class="card" style="margin-top:1rem"><div class="card-head"><div class="card-title">Ең көп алынған тауарлар</div></div><div class="card-body">${sorted.map(([n,q],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);font-size:12px;min-width:16px">${i+1}.</span><span style="flex:1;font-size:13px">${esc(n)}</span><span class="debt-qty">${q}×</span></div>`).join('')}</div></div>`:''}`;
+}
+</script>
+</body>
+</html>
